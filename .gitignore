@@ -1,0 +1,15 @@
+node_modules
+**/coverage
+**/env.local.yml
+**/generated/ogm-types.ts
+**/generated/enums.ts
+**/.terraform*
+**/terraform.tfstate*
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+build
