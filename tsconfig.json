@@ -1,25 +1,14 @@
 {
-    "compilerOptions": {
-        "target": "ES2020",
-        "module": "NodeNext",
-        "declaration": true,
-        "outDir": "./build",
-        "removeComments": true,
-        "downlevelIteration": true,
-        "strictNullChecks": true, /* Enable strict null checks. */
-        "strictFunctionTypes": true, /* Enable strict checking of function types. */
-        "strictBindCallApply": true, /* Enable strict 'bind', 'call', and 'apply' methods on functions. */
-        "strictPropertyInitialization": true, /* Enable strict checking of property initialization in classes. */
-        "noImplicitThis": true, /* Raise error on 'this' expressions with an implied 'any' type. */
-        "forceConsistentCasingInFileNames": true, /* Disallow inconsistently-cased references to the same file. */
-        "incremental": true
-    },
-    "include": [
-        "src/**/*.ts",
-        "types/**/*.ts"
-    ],
-    "exclude": [
-        "node_modules",
-        "build",
-    ]
+  "compilerOptions": {
+    "module": "NodeNext",
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "outDir": "functions/lib",
+    "sourceMap": true,
+    "target": "ES2020"
+  },
+  "compileOnSave": true,
+  "include": [
+    "functions/src"
+  ]
 }

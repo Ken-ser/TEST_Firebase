@@ -13,3 +13,8 @@ node_modules
 !.yarn/versions
 .pnp.*
 build
+# Compiled JavaScript files
+lib/**/*.js
+lib/**/*.js.map
+# TypeScript v1 declaration files
+typings/
