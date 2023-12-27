@@ -13,6 +13,7 @@ node_modules
 !.yarn/versions
 .pnp.*
 build
+*.log
 # Compiled JavaScript files
 lib/**/*.js
 lib/**/*.js.map

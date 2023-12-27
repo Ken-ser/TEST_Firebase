@@ -1,89 +1,58 @@
-/* eslint-disable guard-for-in */
-/* eslint-disable indent */
-/* eslint-disable max-len */
-/* eslint-disable object-curly-spacing */
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
-
 import { onRequest } from "firebase-functions/v2/https";
-import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
-import * as logger from "firebase-functions/logger";
-import { initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
-import { getStorage } from "firebase-admin/storage";
+import { initializeApp } from "firebase/app";
+import { getStorage, ref, uploadBytes } from "firebase/storage";
+import { doc, getFirestore, setDoc } from "firebase/firestore";
+import busboy from "busboy";
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+const app = initializeApp({ projectId: "just-zoo-234019", storageBucket: "just-zoo-234019.appspot.com" });
 
-initializeApp({ storageBucket: "just-zoo-234019.appspot.com" });
-
-// Take the text parameter passed to this HTTP endpoint and insert it into
-// Firestore under the path /messages/:documentId/original
-export const addmessage = onRequest(async (request, response) => {
-    // Grab the text parameter.
-    const original = request.query.text;
-    logger.log("Uploading", original);
-
-    const db = getFirestore();
-    // Push the new message into Firestore using the Firebase Admin SDK.
-    const uppercaseRef = db.collection("messages").doc("up");
-
-    const res = await uppercaseRef.set({
-        original,
-    });
-    // Send back a message that we've successfully written the message
-    response.json({
-        result: "Message added",
-        res,
-    });
-});
-
-// Listens for new messages added to /messages/:documentId/original
-// and saves an uppercased version of the message
-// to /messages/:documentId/uppercase
-export const makeuppercase = onDocumentCreated("/messages/{documentId}", (event) => {
-    // Grab the current value of what was written to Firestore.
-    const original = event.data?.data().original;
-    // Access the parameter `{documentId}` with `event.params`
-    logger.log("Uppercasing on creation", event.params.documentId, original);
-
-    const uppercase = original.toUpperCase();
-
-    // You must return a Promise when performing
-    // asynchronous tasks inside a function
-    // such as writing to Firestore.
-    // Setting an 'uppercase' field in Firestore document returns a Promise.
-    return event.data?.ref.set({ uppercase }, { merge: true });
-});
-export const updateuppercase = onDocumentUpdated("/messages/{documentId}", (event) => {
-    logger.log("Uppercasing on update");
-    // Grab the current value of what was written to Firestore.
-    if (event.data?.before.data().original != event.data?.after.data().original) {
-        const uppercase = event.data?.after.data().original.toUpperCase();
-        logger.log("Uppercased");
-        return event.data?.after.ref.set({ uppercase }, { merge: true });
+export const loadCV = onRequest(async (req, res) => {
+    const bboy = busboy({ headers: req.headers });
+    let fileBuffer;
+    const formData = {
+        name: '',
+        surname: '',
+        email: '',
+        position: '',
+        motivation: ''
     }
-    return { res: "ok" };
-});
 
-export const helloWorld = onRequest((request, response) => {
-    logger.info("Hello logs!", { structuredData: true });
-    response.send({ pippo: "pippo" });
-});
+    bboy.on('file', (fieldname, file) => {
+        file.on('data', (data) => {
+            fileBuffer = data;
+        });
+    });
 
-export const loadCV = onRequest(async (request, response) => {
-    logger.info("Hello logs!", { structuredData: true });
-    const storage = getStorage().bucket();
+    bboy.on('field', (fieldname, val) => {
+        formData[fieldname] = val;
+    });
 
-    await storage.upload("lib/cv copy.pdf", {
-        destination: "cvs/cv copy.pdf",
-    }).catch((error) => response.send(error));
+    bboy.on('finish', async () => {
+        if (!formData.email || !fileBuffer) {
+            return res.status(400).send('Invalid Request Body');
+        }
 
-    response.send("ok");
+        try {
+            const storage = getStorage(app);
+            const storageRef = ref(storage, `cvs/${formData.name} ${formData.surname}`);
+            // Push file into storage
+            await uploadBytes(storageRef, fileBuffer, {
+                contentType: 'application/pdf',
+            });
+
+            console.log(`Filename Input Value:`, formData);
+
+            const db = getFirestore(app);
+            // Push data into Firestore
+            const applicationRef = doc(db, "applications", formData.name);
+            await setDoc(applicationRef, formData, { merge: true });
+
+            return res.status(200).send('File uploaded successfully');
+        } catch (error) {
+            console.error(error);
+            return res.status(500).send('Internal Server Error');
+        }
+    });
+
+    bboy.end(req.rawBody);
 });
