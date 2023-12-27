@@ -5,6 +5,7 @@
     "noUnusedLocals": true,
     "outDir": "functions/lib",
     "sourceMap": true,
+    "esModuleInterop": false,
     "target": "ES2020"
   },
   "compileOnSave": true,

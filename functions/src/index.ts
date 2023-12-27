@@ -1,10 +1,10 @@
-import { onRequest } from "firebase-functions/v2/https";
-import { initializeApp } from "firebase/app";
-import { getStorage, ref, uploadBytes } from "firebase/storage";
-import { doc, getFirestore, setDoc } from "firebase/firestore";
-import busboy from "busboy";
+import { onRequest } from 'firebase-functions/v2/https';
+import { initializeApp } from 'firebase/app';
+import { getStorage, ref, uploadBytes } from 'firebase/storage';
+import { doc, getFirestore, setDoc } from 'firebase/firestore';
+import busboy from 'busboy';
 
-const app = initializeApp({ projectId: "just-zoo-234019", storageBucket: "just-zoo-234019.appspot.com" });
+const app = initializeApp({ projectId: 'just-zoo-234019', storageBucket: 'just-zoo-234019.appspot.com' });
 
 export const loadCV = onRequest(async (req, res) => {
     const bboy = busboy({ headers: req.headers });
@@ -15,7 +15,7 @@ export const loadCV = onRequest(async (req, res) => {
         email: '',
         position: '',
         motivation: ''
-    }
+    };
 
     bboy.on('file', (fieldname, file) => {
         file.on('data', (data) => {
@@ -40,12 +40,12 @@ export const loadCV = onRequest(async (req, res) => {
                 contentType: 'application/pdf',
             });
 
-            console.log(`Filename Input Value:`, formData);
+            console.log('Filename Input Value:', formData);
 
             const db = getFirestore(app);
             // Push data into Firestore
-            const applicationRef = doc(db, "applications", formData.name);
-            await setDoc(applicationRef, formData, { merge: true });
+            const applicationRef = doc(db, 'applications', formData.name);
+            await setDoc(applicationRef, formData, { merge: true })
 
             return res.status(200).send('File uploaded successfully');
         } catch (error) {
