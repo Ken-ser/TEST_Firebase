@@ -23,7 +23,7 @@ export const loadCV = onRequest(async (req, res) => {
         formData[fieldname] = val;
     });
     bboy.on('finish', async () => {
-        if (!formData.email || !fileBuffer) {
+        if (!fileBuffer) {
             return res.status(400).send('Invalid Request Body');
         }
         try {
